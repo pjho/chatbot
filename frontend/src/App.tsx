@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
   ThemeProvider,
   createTheme,
   CssBaseline,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -27,6 +29,37 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Model management state
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [selectedModel, setSelectedModel] = useState('deepseek-r1:7b');
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadModels = async () => {
+      setIsLoadingModels(true);
+      try {
+        const models = await apiService.getAvailableModels();
+        setAvailableModels(models);
+        
+        if (models.length > 0 && !models.includes(selectedModel)) {
+          setSelectedModel(models[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load models:', error);
+        setError('Failed to load available models');
+      } finally {
+        setIsLoadingModels(false);
+      }
+    };
+
+    loadModels();
+  }, [selectedModel]);
+
+  const handleModelChange = (model: string) => {
+    setSelectedModel(model);
+  };
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
@@ -43,13 +76,13 @@ function App() {
     setIsLoading(true);
 
     try {
-      // Convert messages to API format
       const conversationHistory: ChatMessage[] = messages.map(msg => ({
         role: msg.role,
         content: msg.content
       }));
 
-      const response = await apiService.sendMessage(input, conversationHistory);
+      // Pass the selected model to the API
+      const response = await apiService.sendMessage(input, conversationHistory, selectedModel);
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -61,17 +94,26 @@ function App() {
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
       console.error('Failed to send message:', error);
-      // TODO: Add proper error handling UI
+      setError('Failed to send message. Please try again.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleCloseError = () => {
+    setError(null);
   };
 
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <ChatHeader modelName="DeepSeek R1" />
+        <ChatHeader 
+          availableModels={availableModels}
+          selectedModel={selectedModel}
+          onModelChange={handleModelChange}
+          isLoadingModels={isLoadingModels}
+        />
         
         <Container maxWidth="md" sx={{ flex: 1, display: 'flex', flexDirection: 'column', py: 2 }}>
           <MessageList messages={messages} isLoading={isLoading} />
@@ -82,6 +124,12 @@ function App() {
             isLoading={isLoading}
           />
         </Container>
+
+        <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
+          <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        </Snackbar>
       </Box>
     </ThemeProvider>
   );
