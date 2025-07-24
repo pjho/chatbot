@@ -15,6 +15,7 @@ import type { Message } from './types/chat';
 import { ChatHeader } from './components/ChatHeader';
 import { MessageList } from './components/MessageList';
 import { MessageInput } from './components/MessageInput';
+import { apiService, type ChatMessage } from './services/api';
 
 const darkTheme = createTheme({
   palette: {
@@ -41,17 +42,29 @@ function App() {
     setInput('');
     setIsLoading(true);
 
-    // TODO: Replace with actual Ollama API call
-    setTimeout(() => {
+    try {
+      // Convert messages to API format
+      const conversationHistory: ChatMessage[] = messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      }));
+
+      const response = await apiService.sendMessage(input, conversationHistory);
+
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "This is a placeholder response. We'll connect to DeepSeek R1 soon!",
+        content: response,
         role: 'assistant',
         timestamp: new Date(),
       };
+
       setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      // TODO: Add proper error handling UI
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
