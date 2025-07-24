@@ -29,7 +29,18 @@ export default class OllamaService {
     this.baseUrl = baseUrl;
   }
 
-  async chat(messages: OllamaMessage[], model = 'deepseek-r1:7b'): Promise<string> {
+  async getAvailableModels(): Promise<string[]> {
+    try {
+      const response = await axios.get(`${this.baseUrl}/api/tags`);
+      return response.data.models.map((model: any) => model.name);
+    } catch (error) {
+      console.error('Failed to fetch available models:', error);
+      throw new Error('Failed to fetch available models');
+    }
+  }
+
+  // Update the chat method signature to make model parameter explicit
+  async chat(messages: OllamaMessage[], model: string): Promise<string> {
     try {
       const response = await axios.post<OllamaChatResponse>(`${this.baseUrl}/api/chat`, {
         model,
@@ -40,7 +51,7 @@ export default class OllamaService {
       return response.data.message.content;
     } catch (error) {
       console.error('Ollama API error:', error);
-      throw new Error('Failed to get response from Ollama');
+      throw new Error(`Failed to get response from model ${model}`);
     }
   }
 
