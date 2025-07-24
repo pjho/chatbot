@@ -18,17 +18,17 @@
 
 ## Phase 2: Backend API Foundation
 ### 2.1 Basic Express Server
-- [ ] Create Express server with TypeScript
-- [ ] Set up CORS for frontend connection
-- [ ] Create health check endpoint
-- [ ] Add request logging middleware
-- [ ] Set up environment variables (.env file)
+- [x] Create Express server with TypeScript
+- [x] Set up CORS for frontend connection
+- [x] Create health check endpoint
+- [x] Add request logging middleware
+- [x] Set up environment variables (.env file)
 
 ### 2.2 Ollama Integration
-- [ ] Create Ollama client service
-- [ ] Implement basic chat completion endpoint
-- [ ] Add error handling for Ollama connection issues
-- [ ] Test single message/response flow
+- [x] Create Ollama client service
+- [x] Implement basic chat completion endpoint
+- [x] Add error handling for Ollama connection issues
+- [x] Test single message/response flow
 - [ ] Add model switching capability
 
 ### 2.3 Database Setup
@@ -129,17 +129,20 @@
 - [ ] Create user guide/README
 
 ## Current Status
-**Phase**: 3.3 Basic Chat Functionality (Complete)
-**Last Updated**: Frontend chat interface complete with MUI components, refactored into clean component structure
-**Next Steps**: Begin Phase 2 - Build Express backend API to connect with Ollama
+**Phase**: 2.2 Ollama Integration (Nearly Complete)
+**Last Updated**: Backend API complete with Express + TypeScript, Ollama integration working, health checks implemented
+**Next Steps**: Either connect React frontend to backend API, implement streaming responses, or add database layer
 
 ## Notes
 - ✅ Frontend complete with working chat interface using MUI dark theme
 - ✅ Components properly separated: ChatHeader, MessageList, MessageBubble, MessageInput, LoadingMessage
-- ✅ TypeScript types defined for Message, ChatState, OllamaResponse
-- ✅ Placeholder chat functionality working (ready for backend integration)
-- 🔄 Ready for git commit and backend development
-- Next: Set up Express server with Ollama integration
+- ✅ Backend Express server with TypeScript, CORS, logging middleware
+- ✅ Ollama service with dependency injection pattern via route factories
+- ✅ Health check endpoints (/health and /health/ollama)
+- ✅ Chat endpoint (/api/chat) tested and working with DeepSeek R1 model
+- ✅ Clean project structure with services and routes separated
+- 🔄 Ready to connect frontend to backend or implement streaming
+- Next: Choose between frontend integration, streaming implementation, or database setup
 
 ## Notes
 - Each checkbox represents a discrete, testable task
