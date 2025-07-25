@@ -1,21 +1,20 @@
 import React from 'react';
-import {
-  Paper,
-  List,
-  ListItem,
-  Typography,
-} from '@mui/material';
+import { Paper, List, ListItem, Typography } from '@mui/material';
 import type { Message } from '../types/chat';
 import { MessageBubble } from './MessageBubble';
 import { LoadingMessage } from './LoadingMessage';
 
 interface MessageListProps {
   messages: Message[];
-  isLoading: boolean;
+  isLoading?: boolean;
   selectedModel: string;
 }
 
-export const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, selectedModel }) => {
+export const MessageList: React.FC<MessageListProps> = ({
+  messages,
+  isLoading = false,
+  selectedModel,
+}) => {
   return (
     <Paper
       elevation={1}
@@ -35,15 +34,28 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, s
       >
         {messages.length === 0 && (
           <ListItem>
-            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', width: '100%' }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ textAlign: 'center', width: '100%' }}
+            >
               Start a conversation with {selectedModel}...
             </Typography>
           </ListItem>
         )}
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-        {isLoading && <LoadingMessage />}
+        {messages.map((message, index) => {
+          const isLastMessage = index === messages.length - 1;
+          const isEmptyMessage = !message.content;
+          const shouldShowLoading =
+            isLoading && isLastMessage && isEmptyMessage;
+          return (
+            <MessageBubble
+              key={message.id}
+              message={message}
+              isLoading={shouldShowLoading}
+            />
+          );
+        })}
       </List>
     </Paper>
   );

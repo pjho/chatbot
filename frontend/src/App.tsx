@@ -76,10 +76,12 @@ function App() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messageInputRef = useRef<MessageInputRef>(null);
-  
+
   // Model management state
   const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [selectedModel, setSelectedModel] = useState(import.meta.env.VITE_DEFAULT_MODEL || 'llama3.2:3b');
+  const [selectedModel, setSelectedModel] = useState(
+    import.meta.env.VITE_DEFAULT_MODEL || 'llama3.2:3b'
+  );
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,7 +91,7 @@ function App() {
       try {
         const models = await apiService.getAvailableModels();
         setAvailableModels(models);
-        
+
         if (models.length > 0 && !models.includes(selectedModel)) {
           setSelectedModel(models[0]);
         }
@@ -108,47 +110,54 @@ function App() {
     setSelectedModel(model);
   };
 
-  const handleSendMessage = async () => {
-    if (!input.trim()) return;
+  const handleSendMessage = async (message: string) => {
+    if (!message.trim()) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input,
-      role: 'user',
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
     setIsLoading(true);
 
-    try {
-      const conversationHistory: ChatMessage[] = messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
+    // Add user message immediately
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: message,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
 
-      // Pass the selected model to the API
-      const response = await apiService.sendMessage(input, conversationHistory, selectedModel);
+    const assistantMessage: Message = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, assistantMessage]);
 
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: response,
-        role: 'assistant',
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, botMessage]);
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      setError('Failed to send message. Please try again.');
-    } finally {
-      setIsLoading(false);
-      // Refocus the input after the message is sent
-      setTimeout(() => {
-        messageInputRef.current?.focus();
-      }, 0);
-    }
+    await apiService.sendMessageStream(
+      message,
+      messages,
+      selectedModel,
+      (token) => {
+        setIsLoading(false);
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            ...updated[updated.length - 1],
+            content: updated[updated.length - 1].content + token,
+          };
+          return updated;
+        });
+      },
+      () => {
+        //console.log('Streaming complete');
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error('Streaming error:', error);
+        setError(`Streaming failed: ${error}`);
+        setIsLoading(false);
+      }
+    );
   };
 
   const handleCloseError = () => {
@@ -159,26 +168,41 @@ function App() {
     <ThemeProvider theme={frappeTheme}>
       <CssBaseline />
       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <ChatHeader 
+        <ChatHeader
           availableModels={availableModels}
           selectedModel={selectedModel}
           onModelChange={handleModelChange}
           isLoadingModels={isLoadingModels}
         />
-        
-        <Container maxWidth="md" sx={{ flex: 1, display: 'flex', flexDirection: 'column', py: 2 }}>
-          <MessageList messages={messages} isLoading={isLoading} selectedModel={selectedModel} />
-          <MessageInput 
+
+        <Container
+          maxWidth="md"
+          sx={{ flex: 1, display: 'flex', flexDirection: 'column', py: 2 }}
+        >
+          <MessageList
+            messages={messages}
+            selectedModel={selectedModel}
+            isLoading={isLoading}
+          />
+          <MessageInput
             ref={messageInputRef}
             value={input}
             onChange={setInput}
-            onSend={handleSendMessage}
+            onSend={() => handleSendMessage(input)}
             isLoading={isLoading}
           />
         </Container>
 
-        <Snackbar open={!!error} autoHideDuration={6000} onClose={handleCloseError}>
-          <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={handleCloseError}
+        >
+          <Alert
+            onClose={handleCloseError}
+            severity="error"
+            sx={{ width: '100%' }}
+          >
             {error}
           </Alert>
         </Snackbar>

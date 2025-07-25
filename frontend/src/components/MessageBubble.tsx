@@ -1,14 +1,17 @@
 import React from 'react';
-import {ListItem, Avatar, Paper, Typography } from '@mui/material';
-import {Person as PersonIcon, SmartToy as BotIcon } from '@mui/icons-material';
+import { ListItem, Avatar, Paper, Typography } from '@mui/material';
+import { Person as PersonIcon, SmartToy as BotIcon } from '@mui/icons-material';
 import type { Message } from '../types/chat';
-
 
 interface MessageBubbleProps {
   message: Message;
+  isLoading?: boolean;
 }
 
-export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+export const MessageBubble: React.FC<MessageBubbleProps> = ({
+  message,
+  isLoading = false,
+}) => {
   return (
     <ListItem
       sx={{
@@ -36,7 +39,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
         }}
       >
         <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-          {message.content}
+          {message.content || (isLoading ? 'Thinking...' : '')}
         </Typography>
         <Typography variant="caption" color="text.secondary">
           {message.timestamp.toLocaleTimeString()}
