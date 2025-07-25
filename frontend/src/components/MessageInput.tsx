@@ -20,7 +20,7 @@ export interface MessageInputRef {
 
 export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({ 
   value, 
-  onChange, 
+  onChange,  
   onSend, 
   isLoading 
 }, ref) => {
