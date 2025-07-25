@@ -10,16 +10,23 @@ export default tseslint.config([
   },
   {
     files: ['**/*.{ts,tsx}'],
-    extends: [
-      js.configs.recommended,
-      ...tseslint.configs.recommended,
-    ],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 2020,
       globals: {
         ...globals.browser,
         ...globals.node,
       },
+    },
+    rules: {
+      semi: ['error', 'always'],
+      indent: ['error', 2],
+      quotes: ['error', 'single'],
+      'comma-dangle': ['error', 'es5'],
+      'object-curly-spacing': ['error', 'always'],
+      'array-bracket-spacing': ['error', 'never'],
+      'space-before-blocks': ['error', 'always'],
+      'keyword-spacing': ['error', { before: true, after: true }],
     },
   },
   {
@@ -34,7 +41,7 @@ export default tseslint.config([
         'warn',
         { allowConstantExport: true },
       ],
-      'semi': ['error', 'always'],
+      semi: ['error', 'always'],
     },
   },
 ]);
