@@ -42,16 +42,66 @@ export default class OllamaService {
   // Update the chat method signature to make model parameter explicit
   async chat(messages: OllamaMessage[], model: string): Promise<string> {
     try {
-      const response = await axios.post<OllamaChatResponse>(`${this.baseUrl}/api/chat`, {
-        model,
-        messages,
-        stream: false
-      });
+      const response = await axios.post<OllamaChatResponse>(
+        `${this.baseUrl}/api/chat`,
+        {
+          model,
+          messages,
+          stream: false,
+        }
+      );
 
       return response.data.message.content;
     } catch (error) {
       console.error('Ollama API error:', error);
       throw new Error(`Failed to get response from model ${model}`);
+    }
+  }
+
+  async *chatStream(
+    messages: OllamaMessage[],
+    model: string
+  ): AsyncGenerator<string, void, unknown> {
+    try {
+      const response = await axios.post(
+        `${this.baseUrl}/api/chat`,
+        {
+          model,
+          messages,
+          stream: true,
+        },
+        {
+          responseType: 'stream',
+        }
+      );
+
+      let buffer = '';
+
+      for await (const chunk of response.data) {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.trim()) {
+            try {
+              const data = JSON.parse(line);
+              if (data.message?.content) {
+                yield data.message.content;
+              }
+              if (data.done) {
+                return;
+              }
+            } catch (parseError) {
+              console.warn('Failed to parse streaming response line:', line);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Ollama streaming API error:', error);
+      throw new Error(`Failed to get streaming response from model ${model}`);
     }
   }
 
