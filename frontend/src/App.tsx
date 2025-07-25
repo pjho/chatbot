@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Container,
@@ -16,12 +16,58 @@ import '@fontsource/roboto/700.css';
 import type { Message } from './types/chat';
 import { ChatHeader } from './components/ChatHeader';
 import { MessageList } from './components/MessageList';
-import { MessageInput } from './components/MessageInput';
+import { MessageInput, type MessageInputRef } from './components/MessageInput';
 import { apiService, type ChatMessage } from './services/api';
 
-const darkTheme = createTheme({
+const frappeTheme = createTheme({
   palette: {
     mode: 'dark',
+    primary: {
+      main: '#8caaee',
+      dark: '#737994',
+      light: '#99d1db',
+      contrastText: '#c6d0f5',
+    },
+    secondary: {
+      main: '#ca9ee6',
+      dark: '#838ba7',
+      light: '#f4b8e4',
+    },
+    background: {
+      default: '#303446',
+      paper: '#414559',
+    },
+    surface: {
+      main: '#51576d',
+    },
+    text: {
+      primary: '#c6d0f5',
+      secondary: '#b5bfe2',
+    },
+    error: {
+      main: '#e78284',
+    },
+    warning: {
+      main: '#e5c890',
+    },
+    info: {
+      main: '#85c1dc',
+    },
+    success: {
+      main: '#a6d189',
+    },
+    grey: {
+      50: '#c6d0f5',
+      100: '#b5bfe2',
+      200: '#a5adce',
+      300: '#949cbb',
+      400: '#838ba7',
+      500: '#737994',
+      600: '#626880',
+      700: '#51576d',
+      800: '#414559',
+      900: '#303446',
+    },
   },
 });
 
@@ -29,10 +75,11 @@ function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const messageInputRef = useRef<MessageInputRef>(null);
   
   // Model management state
   const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [selectedModel, setSelectedModel] = useState('deepseek-r1:7b');
+  const [selectedModel, setSelectedModel] = useState(import.meta.env.VITE_DEFAULT_MODEL || 'llama3.2:3b');
   const [isLoadingModels, setIsLoadingModels] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -97,6 +144,10 @@ function App() {
       setError('Failed to send message. Please try again.');
     } finally {
       setIsLoading(false);
+      // Refocus the input after the message is sent
+      setTimeout(() => {
+        messageInputRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -105,7 +156,7 @@ function App() {
   };
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={frappeTheme}>
       <CssBaseline />
       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
         <ChatHeader 
@@ -116,8 +167,9 @@ function App() {
         />
         
         <Container maxWidth="md" sx={{ flex: 1, display: 'flex', flexDirection: 'column', py: 2 }}>
-          <MessageList messages={messages} isLoading={isLoading} />
+          <MessageList messages={messages} isLoading={isLoading} selectedModel={selectedModel} />
           <MessageInput 
+            ref={messageInputRef}
             value={input}
             onChange={setInput}
             onSend={handleSendMessage}
