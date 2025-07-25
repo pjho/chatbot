@@ -12,9 +12,10 @@ import { LoadingMessage } from './LoadingMessage';
 interface MessageListProps {
   messages: Message[];
   isLoading: boolean;
+  selectedModel: string;
 }
 
-export const MessageList: React.FC<MessageListProps> = ({ messages, isLoading }) => {
+export const MessageList: React.FC<MessageListProps> = ({ messages, isLoading, selectedModel }) => {
   return (
     <Paper
       elevation={1}
@@ -35,7 +36,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, isLoading })
         {messages.length === 0 && (
           <ListItem>
             <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', width: '100%' }}>
-              Start a conversation with DeepSeek R1...
+              Start a conversation with {selectedModel}...
             </Typography>
           </ListItem>
         )}

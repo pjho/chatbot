@@ -44,7 +44,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             <MenuItem key={model} value={model}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {formatModelName(model)}
-                {model.includes('deepseek') && (
+                {model === selectedModel && (
                   <Chip label="Current" size="small" color="primary" variant="outlined" />
                 )}
               </Box>

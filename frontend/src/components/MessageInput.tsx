@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import {
   Box,
   TextField,
@@ -14,12 +14,24 @@ interface MessageInputProps {
   isLoading: boolean;
 }
 
-export const MessageInput: React.FC<MessageInputProps> = ({ 
+export interface MessageInputRef {
+  focus: () => void;
+}
+
+export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({ 
   value, 
   onChange, 
   onSend, 
   isLoading 
-}) => {
+}, ref) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    },
+  }));
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -33,6 +45,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <TextField
+            inputRef={inputRef}
             fullWidth
             multiline
             maxRows={4}
@@ -55,4 +68,4 @@ export const MessageInput: React.FC<MessageInputProps> = ({
       </Box>
     </>
   );
-};
+});
