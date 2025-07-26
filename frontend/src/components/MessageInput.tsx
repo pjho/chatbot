@@ -33,7 +33,7 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
   }));
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
       e.preventDefault();
       onSend();
     }
@@ -52,9 +52,8 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
+            placeholder={isLoading ? "AI is responding..." : "Type your message..."}
             variant="outlined"
-            disabled={isLoading}
           />
           <IconButton
             color="primary"
