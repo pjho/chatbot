@@ -1,6 +1,7 @@
 import React from 'react';
-import { ListItem, Avatar, Paper, Typography } from '@mui/material';
+import { ListItem, Avatar, Paper, Typography, Box } from '@mui/material';
 import { Person as PersonIcon, SmartToy as BotIcon } from '@mui/icons-material';
+import { Markdown } from './Markdown';
 import type { Message } from '../types/chat';
 
 interface MessageBubbleProps {
@@ -38,9 +39,19 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           bgcolor: message.role === 'user' ? 'primary.dark' : 'grey.800',
         }}
       >
-        <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-          {message.content || (isLoading ? 'Thinking...' : '')}
-        </Typography>
+        {message.role === 'user' ? (
+          <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+            {message.content || (isLoading ? 'Typing...' : '')}
+          </Typography>
+        ) : (
+          <Box sx={{ '& > *': { margin: 0 }, '& p': { marginBottom: 1 } }}>
+            {message.content || isLoading ? (
+              <Markdown>{message.content || 'Thinking...'}</Markdown>
+            ) : (
+              <Typography variant="body1">Thinking...</Typography>
+            )}
+          </Box>
+        )}
         <Typography variant="caption" color="text.secondary">
           {message.timestamp.toLocaleTimeString()}
         </Typography>
