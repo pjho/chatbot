@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Container,
@@ -17,7 +17,7 @@ import type { Message } from './types/chat';
 import { ChatHeader } from './components/ChatHeader';
 import { MessageList } from './components/MessageList';
 import { MessageInput, type MessageInputRef } from './components/MessageInput';
-import { apiService, type ChatMessage } from './services/api';
+import { apiService } from './services/api';
 
 const frappeTheme = createTheme({
   palette: {
@@ -36,9 +36,6 @@ const frappeTheme = createTheme({
     background: {
       default: '#303446',
       paper: '#414559',
-    },
-    surface: {
-      main: '#51576d',
     },
     text: {
       primary: '#c6d0f5',
@@ -138,7 +135,6 @@ function App() {
       messages,
       selectedModel,
       (token) => {
-        setIsLoading(false);
         setMessages((prev) => {
           const updated = [...prev];
           updated[updated.length - 1] = {
@@ -153,9 +149,9 @@ function App() {
         setIsLoading(false);
       },
       (error) => {
+        setIsLoading(false);
         console.error('Streaming error:', error);
         setError(`Streaming failed: ${error}`);
-        setIsLoading(false);
       }
     );
   };

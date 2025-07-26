@@ -2,7 +2,7 @@ import React from 'react';
 import { Paper, List, ListItem, Typography } from '@mui/material';
 import type { Message } from '../types/chat';
 import { MessageBubble } from './MessageBubble';
-import { LoadingMessage } from './LoadingMessage';
+import { Widgets } from '@mui/icons-material';
 
 interface MessageListProps {
   messages: Message[];
