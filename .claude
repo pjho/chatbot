@@ -13,7 +13,7 @@
 ### 1.2 Project Structure
 - [x] Create monorepo structure (frontend/ and backend/ directories)
 - [x] Set up TypeScript configs for both frontend and backend
-- [ ] Configure basic ESLint/Prettier setup
+- [x] Configure basic ESLint/Prettier setup
 - [x] Create basic README with setup instructions
 
 ## Phase 2: Backend API Foundation
@@ -29,7 +29,7 @@
 - [x] Implement basic chat completion endpoint
 - [x] Add error handling for Ollama connection issues
 - [x] Test single message/response flow
-- [ ] Add model switching capability
+- [x] Add model switching capability
 
 ### 2.3 Database Setup
 - [ ] Set up SQLite database
@@ -69,17 +69,17 @@
 
 ## Phase 4: Real-time Streaming
 ### 4.1 Backend Streaming
-- [ ] Implement Server-Sent Events for response streaming
-- [ ] Modify Ollama integration to stream tokens
-- [ ] Handle streaming errors and reconnection
+- [x] Implement Server-Sent Events for response streaming
+- [x] Modify Ollama integration to stream tokens
+- [x] Handle streaming errors and reconnection
 - [ ] Add proper stream cleanup
 
 ### 4.2 Frontend Streaming
-- [ ] Implement EventSource for receiving streams
+- [x] Implement EventSource for receiving streams
 - [ ] Create typing indicator component
-- [ ] Display tokens as they arrive
-- [ ] Handle stream completion
-- [ ] Add stream error handling
+- [x] Display tokens as they arrive
+- [x] Handle stream completion
+- [x] Add stream error handling
 
 ## Phase 5: Conversation Management
 ### 5.1 Conversation Persistence
