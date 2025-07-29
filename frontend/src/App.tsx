@@ -71,10 +71,10 @@ const frappeTheme = createTheme({
 function App() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const messageInputRef = useRef<MessageInputRef>(null);
 
-  // Model management state
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [selectedModel, setSelectedModel] = useState(
     import.meta.env.VITE_DEFAULT_MODEL || 'llama3.2:3b'
@@ -112,7 +112,6 @@ function App() {
 
     setIsLoading(true);
 
-    // Add user message immediately
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
@@ -134,6 +133,7 @@ function App() {
       message,
       messages,
       selectedModel,
+      conversationId,
       (token) => {
         setMessages((prev) => {
           const updated = [...prev];
@@ -144,8 +144,8 @@ function App() {
           return updated;
         });
       },
-      () => {
-        //console.log('Streaming complete');
+      (receivedConversationId) => {
+        setConversationId(receivedConversationId);
         setIsLoading(false);
       },
       (error) => {

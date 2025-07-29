@@ -26,8 +26,9 @@ class ApiService {
     message: string,
     messages: Message[],
     model: string,
+    conversationId: string | null,
     onToken: (token: string) => void,
-    onComplete: () => void,
+    onComplete: (conversationId: string) => void,
     onError: (error: string) => void
   ): Promise<void> {
     try {
@@ -43,6 +44,7 @@ class ApiService {
           message,
           messages: conversationHistory,
           model,
+          ...(conversationId && { conversationId }),
         }),
       });
 
@@ -52,6 +54,7 @@ class ApiService {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let receivedConversationId: string | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -65,7 +68,9 @@ class ApiService {
             try {
               const data = JSON.parse(line.slice(6));
               if (data.token) onToken(data.token);
-              if (data.done) onComplete();
+              if (data.conversationId)
+                receivedConversationId = data.conversationId;
+              if (data.done) onComplete(receivedConversationId!);
               if (data.error) onError(data.error);
             } catch (parseError) {
               console.warn('Failed to parse SSE data:', line);
@@ -76,31 +81,6 @@ class ApiService {
     } catch (error) {
       onError('Streaming failed');
     }
-  }
-
-  async sendMessage(
-    message: string,
-    conversationHistory: ChatMessage[] = [],
-    model?: string
-  ): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/api/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message,
-        messages: conversationHistory,
-        ...(model && { model }),
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data: ChatResponse = await response.json();
-    return data.message;
   }
 
   async getAvailableModels(): Promise<string[]> {

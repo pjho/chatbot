@@ -13,6 +13,7 @@ datasource db {
 
 model Conversation {
   id        Int      @id @default(autoincrement())
+  publicId  String   @unique @default(uuid()) @map("public_id")
   title     String   @default("New Chat")
   messages  Message[]
   createdAt DateTime @default(now()) @map("created_at")
@@ -23,6 +24,7 @@ model Conversation {
 
 model Message {
   id             Int          @id @default(autoincrement())
+  publicId       String       @unique @default(uuid()) @map("public_id")
   conversationId Int          @map("conversation_id")
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   role           Role
