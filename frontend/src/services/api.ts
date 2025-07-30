@@ -37,14 +37,17 @@ class ApiService {
         content: msg.content,
       }));
 
-      const response = await fetch(`${this.baseUrl}/api/chat/stream`, {
+      const endpoint = conversationId 
+        ? `${this.baseUrl}/api/conversations/${conversationId}/messages`
+        : `${this.baseUrl}/api/conversations/new/messages`;
+        
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message,
           messages: conversationHistory,
           model,
-          ...(conversationId && { conversationId }),
         }),
       });
 
@@ -84,7 +87,7 @@ class ApiService {
   }
 
   async getAvailableModels(): Promise<string[]> {
-    const response = await fetch(`${this.baseUrl}/api/chat/models`);
+    const response = await fetch(`${this.baseUrl}/api/models`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

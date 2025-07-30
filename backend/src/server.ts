@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-import createChatRoutes from './routes/chat.js';
+import createConversationRoutes from './routes/conversations.js';
+import createModelRoutes from './routes/models.js';
 import createHealthRoutes from './routes/health.js';
 
 import OllamaService from './services/ollama.js';
@@ -26,7 +27,8 @@ app.use((req, res, next) => {
 });
 
 
-app.use('/api/chat', createChatRoutes(ollamaService));
+app.use('/api/conversations', createConversationRoutes(ollamaService));
+app.use('/api/models', createModelRoutes(ollamaService));
 app.use('/health', createHealthRoutes(ollamaService));
 
 

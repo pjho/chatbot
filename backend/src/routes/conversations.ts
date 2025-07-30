@@ -4,15 +4,70 @@ import { ChatService } from '../services/ChatService.js';
 
 const router = Router();
 
-export default function createChatRoutes(ollamaService: OllamaService) {
-  router.post('/stream', async (req, res) => {
+export default function createConversationRoutes(ollamaService: OllamaService) {
+  router.get('/', async (req, res) => {
+    try {
+      const chatService = new ChatService();
+      const conversations = await chatService.getAllConversations();
+      
+      res.json({
+        conversations: conversations.map((conv) => ({
+          publicId: conv.publicId,
+          title: conv.title,
+          createdAt: conv.createdAt,
+          updatedAt: conv.updatedAt,
+        })),
+      });
+    } catch (error) {
+      console.error('List conversations error:', error);
+      res.status(500).json({ error: 'Failed to list conversations' });
+    }
+  });
+
+  router.get('/:publicId', async (req, res) => {
+    try {
+      const { publicId } = req.params;
+      const chatService = new ChatService();
+
+      const conversation = await chatService.getConversation(publicId);
+
+      if (!conversation) {
+        return res.status(404).json({ error: 'Conversation not found' });
+      }
+
+      const messages = await chatService.getConversationMessages(
+        conversation.publicId
+      );
+
+      res.json({
+        conversation: {
+          publicId: conversation.publicId,
+          title: conversation.title,
+          createdAt: conversation.createdAt,
+          updatedAt: conversation.updatedAt,
+        },
+        messages: messages.map((msg) => ({
+          id: msg.id,
+          role: msg.role,
+          content: msg.content,
+          model: msg.model,
+          createdAt: msg.createdAt,
+        })),
+      });
+    } catch (error) {
+      console.error('Load conversation error:', error);
+      res.status(500).json({ error: 'Failed to load conversation' });
+    }
+  });
+
+  router.post('/:publicId/messages', async (req, res) => {
     try {
       const {
         message,
         messages = [],
         model = 'deepseek-r1:7b',
-        conversationId,
       } = req.body;
+      const { publicId: conversationId } = req.params;
 
       if (!message) {
         return res.status(400).json({ error: 'Message is required' });
@@ -21,14 +76,18 @@ export default function createChatRoutes(ollamaService: OllamaService) {
       const chatService = new ChatService();
       let currentConversationPublicId: string;
 
-      if (!conversationId) {
+      if (conversationId === 'new') {
         const conversation = await chatService.createConversation();
         currentConversationPublicId = conversation.publicId;
       } else {
         currentConversationPublicId = conversationId;
       }
 
-      await chatService.addMessage(currentConversationPublicId, 'user', message);
+      await chatService.addMessage(
+        currentConversationPublicId,
+        'user',
+        message
+      );
 
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
@@ -62,7 +121,6 @@ export default function createChatRoutes(ollamaService: OllamaService) {
           assistantResponse,
           model
         );
-        await chatService.disconnect();
 
         res.write(
           `data: ${JSON.stringify({ done: true, conversationId: currentConversationPublicId })}\n\n`
@@ -77,16 +135,6 @@ export default function createChatRoutes(ollamaService: OllamaService) {
       res
         .status(500)
         .json({ error: 'Failed to process streaming chat message' });
-    }
-  });
-
-  router.get('/models', async (req, res) => {
-    try {
-      const models = await ollamaService.getAvailableModels();
-      res.json({ models });
-    } catch (error) {
-      console.error('Models fetch error:', error);
-      res.status(500).json({ error: 'Failed to fetch available models' });
     }
   });
 
