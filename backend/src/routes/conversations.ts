@@ -60,6 +60,23 @@ export default function createConversationRoutes(ollamaService: OllamaService) {
     }
   });
 
+  router.post('/', async (req, res) => {
+    try {
+      const chatService = new ChatService();
+      const conversation = await chatService.createConversation();
+      
+      res.status(201).json({
+        publicId: conversation.publicId,
+        title: conversation.title,
+        createdAt: conversation.createdAt,
+        updatedAt: conversation.updatedAt,
+      });
+    } catch (error) {
+      console.error('Create conversation error:', error);
+      res.status(500).json({ error: 'Failed to create conversation' });
+    }
+  });
+
   router.post('/:publicId/messages', async (req, res) => {
     try {
       const {
@@ -74,13 +91,11 @@ export default function createConversationRoutes(ollamaService: OllamaService) {
       }
 
       const chatService = new ChatService();
-      let currentConversationPublicId: string;
+      const currentConversationPublicId = conversationId;
 
-      if (conversationId === 'new') {
-        const conversation = await chatService.createConversation();
-        currentConversationPublicId = conversation.publicId;
-      } else {
-        currentConversationPublicId = conversationId;
+      const conversation = await chatService.getConversation(currentConversationPublicId);
+      if (!conversation) {
+        return res.status(404).json({ error: 'Conversation not found' });
       }
 
       await chatService.addMessage(

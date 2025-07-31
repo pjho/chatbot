@@ -129,7 +129,7 @@ function App() {
     };
     setMessages((prev) => [...prev, assistantMessage]);
 
-    await apiService.sendMessageStream(
+    await apiService.sendMessage(
       message,
       messages,
       selectedModel,

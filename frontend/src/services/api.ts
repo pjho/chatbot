@@ -4,15 +4,15 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
 }
-
-export interface ChatResponse {
-  message: string;
-  timestamp: string;
-  model?: string;
-}
-
 export interface ModelsResponse {
   models: string[];
+}
+
+export interface Conversation {
+  publicId: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 class ApiService {
@@ -22,11 +22,24 @@ class ApiService {
     this.baseUrl = baseUrl;
   }
 
+  async createConversation(): Promise<Conversation> {
+    const response = await fetch(`${this.baseUrl}/api/conversations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create conversation');
+    }
+
+    return await response.json();
+  }
+
   async sendMessageStream(
     message: string,
     messages: Message[],
     model: string,
-    conversationId: string | null,
+    conversationId: string,
     onToken: (token: string) => void,
     onComplete: (conversationId: string) => void,
     onError: (error: string) => void
@@ -37,19 +50,18 @@ class ApiService {
         content: msg.content,
       }));
 
-      const endpoint = conversationId 
-        ? `${this.baseUrl}/api/conversations/${conversationId}/messages`
-        : `${this.baseUrl}/api/conversations/new/messages`;
-        
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message,
-          messages: conversationHistory,
-          model,
-        }),
-      });
+      const response = await fetch(
+        `${this.baseUrl}/api/conversations/${conversationId}/messages`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message,
+            messages: conversationHistory,
+            model,
+          }),
+        }
+      );
 
       if (!response.body) {
         throw new Error('No response body');
@@ -73,7 +85,8 @@ class ApiService {
               if (data.token) onToken(data.token);
               if (data.conversationId)
                 receivedConversationId = data.conversationId;
-              if (data.done) onComplete(receivedConversationId!);
+              if (data.done)
+                onComplete(receivedConversationId || conversationId);
               if (data.error) onError(data.error);
             } catch (parseError) {
               console.warn('Failed to parse SSE data:', line);
@@ -83,6 +96,37 @@ class ApiService {
       }
     } catch (error) {
       onError('Streaming failed');
+    }
+  }
+
+  async sendMessage(
+    message: string,
+    messages: Message[],
+    model: string,
+    conversationId: string | null,
+    onToken: (token: string) => void,
+    onComplete: (conversationId: string) => void,
+    onError: (error: string) => void
+  ): Promise<void> {
+    try {
+      let currentConversationId = conversationId;
+
+      if (!conversationId) {
+        const conversation = await this.createConversation();
+        currentConversationId = conversation.publicId;
+      }
+
+      await this.sendMessageStream(
+        message,
+        messages,
+        model,
+        currentConversationId,
+        onToken,
+        onComplete,
+        onError
+      );
+    } catch (error) {
+      onError('Failed to send message');
     }
   }
 
