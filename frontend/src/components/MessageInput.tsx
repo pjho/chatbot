@@ -1,41 +1,33 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
-import {
-  Box,
-  TextField,
-  IconButton,
-  Divider,
-} from '@mui/material';
+import React, { useState } from 'react';
+import { Box, TextField, IconButton, Divider } from '@mui/material';
 import { Send as SendIcon } from '@mui/icons-material';
 
 interface MessageInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSend: () => void;
+  onSend: (message: string) => void;
   isLoading: boolean;
 }
 
-export interface MessageInputRef {
-  focus: () => void;
-}
+export const MessageInput: React.FC<MessageInputProps> = ({
+  onSend,
+  isLoading,
+}) => {
+  const [value, setValue] = useState('');
 
-export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({ 
-  value, 
-  onChange,  
-  onSend, 
-  isLoading 
-}, ref) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value);
+  };
 
-  useImperativeHandle(ref, () => ({
-    focus: () => {
-      inputRef.current?.focus();
-    },
-  }));
+  const handleSubmit = () => {
+    if (value.trim()) {
+      onSend(value.trim());
+      setValue('');
+    }
+  };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
       e.preventDefault();
-      onSend();
+      handleSubmit();
     }
   };
 
@@ -45,19 +37,20 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <TextField
-            inputRef={inputRef}
             fullWidth
             multiline
             maxRows={4}
             value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={isLoading ? "AI is responding..." : "Type your message..."}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              isLoading ? 'AI is responding...' : 'Type your message...'
+            }
             variant="outlined"
           />
           <IconButton
             color="primary"
-            onClick={onSend}
+            onClick={handleSubmit}
             disabled={!value.trim() || isLoading}
             sx={{ alignSelf: 'flex-end' }}
           >
@@ -67,4 +60,4 @@ export const MessageInput = forwardRef<MessageInputRef, MessageInputProps>(({
       </Box>
     </>
   );
-});
+};

@@ -15,6 +15,16 @@ export interface Conversation {
   updatedAt: string;
 }
 
+interface SendMessageStreamParams {
+  message: string;
+  messages: Message[];
+  model: string;
+  conversationId: string;
+  onToken: (token: string) => void;
+  onComplete: () => void;
+  onError: (error: string) => void;
+}
+
 class ApiService {
   private baseUrl: string;
 
@@ -35,15 +45,15 @@ class ApiService {
     return await response.json();
   }
 
-  async sendMessageStream(
-    message: string,
-    messages: Message[],
-    model: string,
-    conversationId: string,
-    onToken: (token: string) => void,
-    onComplete: (conversationId: string) => void,
-    onError: (error: string) => void
-  ): Promise<void> {
+  async sendMessageStream({
+    message,
+    messages,
+    model,
+    conversationId,
+    onToken,
+    onComplete,
+    onError,
+  }: SendMessageStreamParams): Promise<void> {
     try {
       const conversationHistory: ChatMessage[] = messages.map((msg) => ({
         role: msg.role,
@@ -69,7 +79,6 @@ class ApiService {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let receivedConversationId: string | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -83,10 +92,7 @@ class ApiService {
             try {
               const data = JSON.parse(line.slice(6));
               if (data.token) onToken(data.token);
-              if (data.conversationId)
-                receivedConversationId = data.conversationId;
-              if (data.done)
-                onComplete(receivedConversationId || conversationId);
+              if (data.done) onComplete();
               if (data.error) onError(data.error);
             } catch (parseError) {
               console.warn('Failed to parse SSE data:', line);
@@ -96,37 +102,6 @@ class ApiService {
       }
     } catch (error) {
       onError('Streaming failed');
-    }
-  }
-
-  async sendMessage(
-    message: string,
-    messages: Message[],
-    model: string,
-    conversationId: string | null,
-    onToken: (token: string) => void,
-    onComplete: (conversationId: string) => void,
-    onError: (error: string) => void
-  ): Promise<void> {
-    try {
-      let currentConversationId = conversationId;
-
-      if (!conversationId) {
-        const conversation = await this.createConversation();
-        currentConversationId = conversation.publicId;
-      }
-
-      await this.sendMessageStream(
-        message,
-        messages,
-        model,
-        currentConversationId,
-        onToken,
-        onComplete,
-        onError
-      );
-    } catch (error) {
-      onError('Failed to send message');
     }
   }
 
