@@ -1,28 +1,25 @@
 import { useCallback } from 'react';
-import { Container, Alert, Snackbar } from '@mui/material';
+import { Container } from '@mui/material';
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 
 import useLLMModelOptions from './hooks/useModelOptions';
 import useConversationMessaging from './hooks/useConversationMessaging';
+import { useNotification } from '../contexts/NotificationContext';
 
 interface ChatInterfaceProps {
   conversationId?: string | null;
 }
 
 export function ChatInterface({ conversationId = null }: ChatInterfaceProps) {
-  // const [error, setError] = useState<string | null>(null);
-
+  const { notify } = useNotification();
   const models = useLLMModelOptions();
   const conversation = useConversationMessaging(
     conversationId,
-    models.selected
+    models.selected,
+    notify
   );
-
-  // const handleCloseError = () => {
-  //   setError(null);
-  // };
 
   const handleMessageSend = useCallback(
     (msg: string = '') => {
@@ -43,7 +40,6 @@ export function ChatInterface({ conversationId = null }: ChatInterfaceProps) {
         onModelChange={models.setSelected}
         isLoadingModels={models.loading}
       />
-
       <Container
         maxWidth="md"
         sx={{ flex: 1, display: 'flex', flexDirection: 'column', py: 2 }}
@@ -58,20 +54,6 @@ export function ChatInterface({ conversationId = null }: ChatInterfaceProps) {
           isLoading={conversation.loading}
         />
       </Container>
-
-      {/* <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={handleCloseError}
-      >
-        <Alert
-          onClose={handleCloseError}
-          severity="error"
-          sx={{ width: '100%' }}
-        >
-          {error}
-        </Alert>
-      </Snackbar> */}
     </>
   );
 }

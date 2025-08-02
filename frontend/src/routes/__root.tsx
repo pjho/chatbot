@@ -7,6 +7,7 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 
 import frappeTheme from '../muiTheme';
+import { NotificationProvider } from '../contexts/NotificationContext';
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -16,10 +17,12 @@ function RootComponent() {
   return (
     <ThemeProvider theme={frappeTheme}>
       <CssBaseline />
-      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Outlet />
-      </Box>
-      <TanStackRouterDevtools />
+      <NotificationProvider>
+        <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <Outlet />
+        </Box>
+        <TanStackRouterDevtools />
+      </NotificationProvider>
     </ThemeProvider>
   );
 }

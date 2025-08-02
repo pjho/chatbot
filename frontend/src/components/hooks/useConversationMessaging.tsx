@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import type { Message } from '../../types/chat';
 import { apiService } from '../../services/api';
+import type { NotifyFunction } from '../../contexts/NotificationContext';
 
 export default function useCreateMessage(
   conversationId: string | null,
-  model: string
+  model: string,
+  notify: NotifyFunction
 ) {
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -30,10 +32,9 @@ export default function useCreateMessage(
     });
   };
 
-  const onError = (error) => {
+  const onError = (error: string) => {
     setIsLoading(false);
-    console.error('Streaming error:', error);
-    // setError(`Streaming failed: ${error}`);
+    notify('error', `Streaming failed: ${error}`);
   };
 
   const onComplete = () => {
