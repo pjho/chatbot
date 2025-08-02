@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 import { Container } from '@mui/material';
+import { useNavigate } from '@tanstack/react-router';
+
 import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
@@ -20,13 +22,21 @@ export function ChatInterface({ conversationId = null }: ChatInterfaceProps) {
     models.selected,
     notify
   );
+  const navigate = useNavigate();
 
   const handleMessageSend = useCallback(
-    (msg: string = '') => {
+    async (msg: string = '') => {
       if (conversationId) {
         conversation.addMessage(msg);
       } else {
-        conversation.create(msg);
+        const created = await conversation.create(msg);
+        if (created) {
+          navigate({
+            to: '/c/$publicId',
+            params: { publicId: created.publicId },
+          });
+          conversation.addMessage(msg);
+        }
       }
     },
     [conversationId]

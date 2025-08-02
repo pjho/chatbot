@@ -44,8 +44,11 @@ export default function useCreateMessage(
   const create = async (message: string) => {
     if (!message.trim()) return;
     setIsLoading(true);
-    const data = await apiService.createConversation();
-    console.log(data);
+    try {
+      return await apiService.createConversation();
+    } catch (e) {
+      notify('error', `Failed to create message - ${e}`);
+    }
   };
 
   const addMessage = async (message: string) => {
