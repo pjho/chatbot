@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Container } from '@mui/material';
 import { useNavigate } from '@tanstack/react-router';
 
@@ -23,6 +23,12 @@ export function ChatInterface({ conversationId = null }: ChatInterfaceProps) {
     notify
   );
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (conversationId) {
+      conversation.loadConversation(conversationId);
+    }
+  }, [conversationId]);
 
   const handleMessageSend = useCallback(
     async (msg: string = '') => {

@@ -1,5 +1,5 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+// import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { Box, ThemeProvider, CssBaseline } from '@mui/material';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -21,7 +21,7 @@ function RootComponent() {
         <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
           <Outlet />
         </Box>
-        <TanStackRouterDevtools />
+        {/* <TanStackRouterDevtools /> */}
       </NotificationProvider>
     </ThemeProvider>
   );

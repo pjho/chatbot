@@ -15,6 +15,11 @@ export interface Conversation {
   updatedAt: string;
 }
 
+export interface ConversationWithMessages {
+  conversation: Conversation;
+  messages: Message[];
+}
+
 interface SendMessageStreamParams {
   message: string;
   messages: Message[];
@@ -114,6 +119,29 @@ class ApiService {
 
     const data: ModelsResponse = await response.json();
     return data.models;
+  }
+
+  async getConversation(publicId: string): Promise<ConversationWithMessages> {
+    const response = await fetch(`${this.baseUrl}/api/conversations/${publicId}`);
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Conversation not found');
+      }
+      throw new Error(`Failed to load conversation: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    return {
+      conversation: data.conversation,
+      messages: data.messages.map((msg: any) => ({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content,
+        timestamp: new Date(msg.createdAt),
+      })),
+    };
   }
 
   async healthCheck(): Promise<boolean> {

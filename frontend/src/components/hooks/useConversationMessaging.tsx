@@ -71,10 +71,23 @@ export default function useCreateMessage(
     });
   };
 
+  const loadConversation = async (publicId: string) => {
+    setIsLoading(true);
+    try {
+      const data = await apiService.getConversation(publicId);
+      setMessages(data.messages);
+    } catch (error) {
+      notify('error', `Failed to load conversation: ${error}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     loading: isLoading,
     messages,
     create,
     addMessage,
+    loadConversation,
   };
 }
