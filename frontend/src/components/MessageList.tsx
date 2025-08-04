@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Paper, List, ListItem, Typography } from '@mui/material';
 import type { Message } from '../types/chat';
 import { MessageBubble } from './MessageBubble';
@@ -15,6 +15,22 @@ export const MessageList: React.FC<MessageListProps> = ({
   isLoading = false,
   selectedModel,
 }) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    if (isLoading) {
+      scrollToBottom();
+    }
+  }, [isLoading]);
   return (
     <Paper
       elevation={1}
@@ -26,6 +42,7 @@ export const MessageList: React.FC<MessageListProps> = ({
       }}
     >
       <List
+        ref={listRef}
         sx={{
           flex: 1,
           overflow: 'auto',
@@ -56,6 +73,7 @@ export const MessageList: React.FC<MessageListProps> = ({
             />
           );
         })}
+        <div ref={messagesEndRef} />
       </List>
     </Paper>
   );

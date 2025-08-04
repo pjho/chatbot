@@ -3,9 +3,7 @@ import { apiService } from '../../services/api';
 
 export default function useLLMModelOptions() {
   const [availableModels, setAvailableModels] = useState<string[]>([]);
-  const [selectedModel, setSelectedModel] = useState(
-    import.meta.env.VITE_DEFAULT_MODEL || 'llama3.2:3b'
-  );
+  const [selectedModel, setSelectedModel] = useState('llama3.2:3b');
   const [isLoadingModels, setIsLoadingModels] = useState(false);
 
   useEffect(() => {
@@ -19,15 +17,14 @@ export default function useLLMModelOptions() {
           setSelectedModel(models[0]);
         }
       } catch (error) {
-        // console.error('Failed to load models:', error);
-        // setError('Failed to load available models');
+        console.error('Failed to load models:', error);
       } finally {
         setIsLoadingModels(false);
       }
     };
 
     loadModels();
-  }, []);
+  }, [selectedModel]);
 
   return {
     loading: isLoadingModels,

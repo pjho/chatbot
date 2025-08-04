@@ -3,9 +3,8 @@ import type { Message } from '../../types/chat';
 import { apiService } from '../../services/api';
 import type { NotifyFunction } from '../../contexts/NotificationContext';
 
-export default function useCreateMessage(
+export default function useConversationMessaging(
   conversationId: string | null,
-  model: string,
   notify: NotifyFunction
 ) {
   const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +50,7 @@ export default function useCreateMessage(
     }
   };
 
-  const addMessage = async (message: string) => {
+  const addMessage = async (message: string, model: string) => {
     if (!message.trim()) return;
     if (!conversationId) return;
 

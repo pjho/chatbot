@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from 'react';
-import { Container } from '@mui/material';
+import { Container, Box, Paper } from '@mui/material';
 import { useNavigate } from '@tanstack/react-router';
 
-import { ChatHeader } from './ChatHeader';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
+import { ModelSelector } from './ModelSelector';
 
 import useLLMModelOptions from './hooks/useModelOptions';
 import useConversationMessaging from './hooks/useConversationMessaging';
@@ -17,11 +17,7 @@ interface ChatInterfaceProps {
 export function ChatInterface({ conversationId = null }: ChatInterfaceProps) {
   const { notify } = useNotification();
   const models = useLLMModelOptions();
-  const conversation = useConversationMessaging(
-    conversationId,
-    models.selected,
-    notify
-  );
+  const conversation = useConversationMessaging(conversationId, notify);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,7 +29,7 @@ export function ChatInterface({ conversationId = null }: ChatInterfaceProps) {
   const handleMessageSend = useCallback(
     async (msg: string = '') => {
       if (conversationId) {
-        conversation.addMessage(msg);
+        conversation.addMessage(msg, models.selected);
       } else {
         const created = await conversation.create(msg);
         if (created) {
@@ -41,24 +37,56 @@ export function ChatInterface({ conversationId = null }: ChatInterfaceProps) {
             to: '/c/$publicId',
             params: { publicId: created.publicId },
           });
-          conversation.addMessage(msg);
+          conversation.addMessage(msg, models.selected);
         }
       }
     },
-    [conversationId]
+    [conversationId, models.selected]
   );
 
   return (
-    <>
-      <ChatHeader
-        availableModels={models.available}
-        selectedModel={models.selected}
-        onModelChange={models.setSelected}
-        isLoadingModels={models.loading}
-      />
+    <Box
+      sx={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        minHeight: 0,
+      }}
+    >
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          zIndex: 1000,
+        }}
+      >
+        <Paper
+          elevation={2}
+          sx={{
+            p: 1,
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+          }}
+        >
+          <ModelSelector
+            availableModels={models.available}
+            selectedModel={models.selected}
+            onModelChange={models.setSelected}
+            isLoading={models.loading}
+          />
+        </Paper>
+      </Box>
       <Container
         maxWidth="md"
-        sx={{ flex: 1, display: 'flex', flexDirection: 'column', py: 2 }}
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          py: 2,
+          minHeight: 0,
+        }}
       >
         <MessageList
           messages={conversation.messages}
@@ -70,6 +98,6 @@ export function ChatInterface({ conversationId = null }: ChatInterfaceProps) {
           isLoading={conversation.loading}
         />
       </Container>
-    </>
+    </Box>
   );
 }

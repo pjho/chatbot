@@ -121,6 +121,17 @@ class ApiService {
     return data.models;
   }
 
+  async getConversations(): Promise<Conversation[]> {
+    const response = await fetch(`${this.baseUrl}/api/conversations`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to load conversations: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.conversations || [];
+  }
+
   async getConversation(publicId: string): Promise<ConversationWithMessages> {
     const response = await fetch(`${this.baseUrl}/api/conversations/${publicId}`);
     
